@@ -16,7 +16,7 @@ export async function sign(payload: string, secret: string): Promise<string> {
   const key = await getKey(secret)
   const enc = new TextEncoder()
   const sig = await crypto.subtle.sign('HMAC', key, enc.encode(payload))
-  const b64 = btoa(String.fromCharCode(...new Uint8Array(sig)))
+  const b64 = btoa(Array.from(new Uint8Array(sig), (b) => String.fromCharCode(b)).join(''))
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
   return `${payload}.${b64}`
 }
