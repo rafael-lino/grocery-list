@@ -5,6 +5,14 @@ Format: `[YYYY-MM-DD] — Description`
 
 ---
 
+## [2026-08-03] — Markdown responses
+
+- Installed `react-markdown` and `remark-gfm`
+- Updated system prompt: LLM now always responds in Markdown, uses GFM tables for item lists, bullet lists for single confirmations, never exposes IDs
+- Added `sanitizeToolResult` in `api/chat/route.ts`: strips `id`, `createdAt`, `updatedAt` from all tool results before they reach the LLM
+- Added `AssistantMarkdown` component in `app/page.tsx` with custom dark-theme styles for tables (purple header, bordered, alternating rows), lists, strong, code, and paragraphs
+- User bubbles remain plain text
+
 ## [2026-08-03] — SQLite → Turso migration
 
 - Removed `better-sqlite3` and `@types/better-sqlite3`

@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 type Role = 'user' | 'assistant'
 
@@ -35,6 +37,59 @@ function TypingIndicator() {
   )
 }
 
+function AssistantMarkdown({ content }: { content: string }) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        p: ({ children }) => (
+          <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>
+        ),
+        ul: ({ children }) => (
+          <ul className="mb-2 last:mb-0 space-y-1 pl-4 list-disc marker:text-purple-400">{children}</ul>
+        ),
+        ol: ({ children }) => (
+          <ol className="mb-2 last:mb-0 space-y-1 pl-4 list-decimal marker:text-purple-400">{children}</ol>
+        ),
+        li: ({ children }) => (
+          <li className="leading-relaxed">{children}</li>
+        ),
+        strong: ({ children }) => (
+          <strong className="font-semibold text-white">{children}</strong>
+        ),
+        em: ({ children }) => (
+          <em className="italic text-gray-300">{children}</em>
+        ),
+        code: ({ children }) => (
+          <code className="bg-white/10 rounded px-1 py-0.5 text-xs font-mono text-purple-300">{children}</code>
+        ),
+        table: ({ children }) => (
+          <div className="overflow-x-auto mb-2 last:mb-0 rounded-xl border border-white/10">
+            <table className="w-full text-sm border-collapse">{children}</table>
+          </div>
+        ),
+        thead: ({ children }) => (
+          <thead className="bg-purple-900/30">{children}</thead>
+        ),
+        tbody: ({ children }) => (
+          <tbody className="divide-y divide-white/5">{children}</tbody>
+        ),
+        tr: ({ children }) => (
+          <tr className="even:bg-white/[0.02]">{children}</tr>
+        ),
+        th: ({ children }) => (
+          <th className="px-3 py-2 text-left text-xs font-semibold text-purple-300 uppercase tracking-wide whitespace-nowrap">{children}</th>
+        ),
+        td: ({ children }) => (
+          <td className="px-3 py-2 text-gray-200 whitespace-nowrap">{children}</td>
+        ),
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  )
+}
+
 function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === 'user'
   return (
@@ -45,13 +100,17 @@ function MessageBubble({ message }: { message: Message }) {
         </div>
       )}
       <div
-        className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+        className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm ${
           isUser
-            ? 'bg-gradient-to-br from-purple-600 to-pink-500 text-white rounded-br-sm'
+            ? 'bg-gradient-to-br from-purple-600 to-pink-500 text-white rounded-br-sm leading-relaxed'
             : 'bg-[#1a1a1a] border border-white/5 text-gray-100 rounded-bl-sm'
         }`}
       >
-        {message.content}
+        {isUser ? (
+          message.content
+        ) : (
+          <AssistantMarkdown content={message.content} />
+        )}
       </div>
     </div>
   )
