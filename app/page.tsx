@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 
 type Role = 'user' | 'assistant'
 
@@ -37,56 +37,21 @@ function TypingIndicator() {
   )
 }
 
+marked.setOptions({ gfm: true, breaks: true })
+
 function AssistantMarkdown({ content }: { content: string }) {
+  const html = useMemo(() => {
+    const raw = (marked.parse(content) as string)
+      .replace(/<table>/g, '<div class="table-wrapper"><table>')
+      .replace(/<\/table>/g, '</table></div>')
+    return DOMPurify.sanitize(raw, { ADD_ATTR: ['class'] })
+  }, [content])
+
   return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      components={{
-        p: ({ children }) => (
-          <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>
-        ),
-        ul: ({ children }) => (
-          <ul className="mb-2 last:mb-0 space-y-1 pl-4 list-disc marker:text-purple-400">{children}</ul>
-        ),
-        ol: ({ children }) => (
-          <ol className="mb-2 last:mb-0 space-y-1 pl-4 list-decimal marker:text-purple-400">{children}</ol>
-        ),
-        li: ({ children }) => (
-          <li className="leading-relaxed">{children}</li>
-        ),
-        strong: ({ children }) => (
-          <strong className="font-semibold text-white">{children}</strong>
-        ),
-        em: ({ children }) => (
-          <em className="italic text-gray-300">{children}</em>
-        ),
-        code: ({ children }) => (
-          <code className="bg-white/10 rounded px-1 py-0.5 text-xs font-mono text-purple-300">{children}</code>
-        ),
-        table: ({ children }) => (
-          <div className="overflow-x-auto mb-2 last:mb-0 rounded-xl border border-white/10">
-            <table className="w-full text-sm border-collapse">{children}</table>
-          </div>
-        ),
-        thead: ({ children }) => (
-          <thead className="bg-purple-900/30">{children}</thead>
-        ),
-        tbody: ({ children }) => (
-          <tbody className="divide-y divide-white/5">{children}</tbody>
-        ),
-        tr: ({ children }) => (
-          <tr className="even:bg-white/[0.02]">{children}</tr>
-        ),
-        th: ({ children }) => (
-          <th className="px-3 py-2 text-left text-xs font-semibold text-purple-300 uppercase tracking-wide whitespace-nowrap">{children}</th>
-        ),
-        td: ({ children }) => (
-          <td className="px-3 py-2 text-gray-200 whitespace-nowrap">{children}</td>
-        ),
-      }}
-    >
-      {content}
-    </ReactMarkdown>
+    <div
+      className="prose-assistant"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
   )
 }
 

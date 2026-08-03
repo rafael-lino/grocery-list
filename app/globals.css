@@ -35,6 +35,26 @@ body {
   border-radius: 2px;
 }
 
+/* Assistant markdown */
+.prose-assistant { font-size: 0.875rem; line-height: 1.6; }
+.prose-assistant p { margin-bottom: 0.5rem; }
+.prose-assistant p:last-child { margin-bottom: 0; }
+.prose-assistant ul, .prose-assistant ol { padding-left: 1.25rem; margin-bottom: 0.5rem; }
+.prose-assistant ul { list-style: disc; }
+.prose-assistant ol { list-style: decimal; }
+.prose-assistant li { margin-bottom: 0.25rem; }
+.prose-assistant ul ::marker, .prose-assistant ol ::marker { color: #a78bfa; }
+.prose-assistant strong { font-weight: 600; color: #fff; }
+.prose-assistant em { font-style: italic; color: #d1d5db; }
+.prose-assistant code { background: rgba(255,255,255,0.1); border-radius: 4px; padding: 0.1rem 0.3rem; font-size: 0.75rem; font-family: monospace; color: #c4b5fd; }
+.prose-assistant .table-wrapper { overflow-x: auto; margin-bottom: 0.5rem; border-radius: 0.75rem; border: 1px solid rgba(255,255,255,0.1); }
+.prose-assistant table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.prose-assistant thead { background: rgba(109,40,217,0.2); }
+.prose-assistant th { padding: 0.5rem 0.75rem; text-align: left; font-size: 0.7rem; font-weight: 600; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+.prose-assistant td { padding: 0.5rem 0.75rem; color: #e5e7eb; white-space: nowrap; }
+.prose-assistant tbody tr { border-top: 1px solid rgba(255,255,255,0.05); }
+.prose-assistant tbody tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+
 /* Typing indicator dots */
 @keyframes bounce-dot {
   0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }

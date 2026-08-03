@@ -10,6 +10,15 @@ Format: `[YYYY-MM-DD] — Description`
 - Removed `sanitizeToolResult` from `app/api/chat/route.ts` — it was stripping `id` from tool results, preventing the LLM from passing IDs back as arguments to `delete_item`, `update_item`, and `bulk_update_quantities`
 - IDs are kept out of user-facing replies via the system prompt instruction alone, which is the correct boundary
 
+## [2026-08-03] — Replace react-markdown with marked + DOMPurify
+
+- Removed `react-markdown` and `remark-gfm` (ESM-only, incompatible with Next.js 14 Webpack on mobile despite `esmExternals: false`)
+- Installed `marked` (CJS-compatible) + `DOMPurify` for HTML sanitization
+- `AssistantMarkdown` now renders via `dangerouslySetInnerHTML` with `marked.parse()` output sanitized by DOMPurify
+- Table HTML wrapped in a `.table-wrapper` div for horizontal scroll on mobile
+- All styles moved to `.prose-assistant` CSS class in `globals.css`
+- Chat page bundle reduced from 45.9 kB → 25.3 kB
+
 ## [2026-08-03] — Fix markdown rendering on mobile
 
 - Replaced `transpilePackages` list (31 entries) with `experimental: { esmExternals: false }` in `next.config.js`
