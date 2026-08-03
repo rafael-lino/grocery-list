@@ -5,6 +5,14 @@ Format: `[YYYY-MM-DD] — Description`
 
 ---
 
+## [2026-08-03] — SQLite → Turso migration
+
+- Removed `better-sqlite3` and `@types/better-sqlite3`
+- Added `@libsql/client`
+- Rewrote `lib/db.ts`: replaced file-based SQLite singleton with `@libsql/client` + `drizzle-orm/libsql` HTTP adapter
+- Updated `drizzle.config.ts`: `dialect: 'turso'`, credentials from `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN` env vars
+- Credentials stored in `.env` (gitignored); must also be set in Vercel project settings
+
 ## [2026-08-03] — PWA icons & docs reorganisation
 
 - Moved `BACKLOG.md` and `CHANGELOG.md` to `/docs`

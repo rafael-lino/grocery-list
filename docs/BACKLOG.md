@@ -8,7 +8,7 @@ Status legend: `[ ]` pending · `[x]` done · `[~]` in progress
 
 - [x] Initialize Next.js 14 with TypeScript and App Router
 - [x] Install and configure Tailwind CSS
-- [x] Install dependencies: `better-sqlite3`, `drizzle-orm`, `drizzle-kit`, `openai`, `next-pwa`
+- [x] Install dependencies: `@libsql/client`, `drizzle-orm`, `drizzle-kit`, `openai`, `next-pwa`
 - [x] Configure `tsconfig.json` path aliases (`@/`)
 - [x] Set up `.gitignore` (node_modules, grocery.db, .env.local)
 - [x] Configure `next.config.js` with PWA plugin
