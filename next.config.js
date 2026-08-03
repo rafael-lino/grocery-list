@@ -8,6 +8,7 @@ const withPWA = require('next-pwa')({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  transpilePackages: ['react-markdown', 'remark-gfm'],
 }
 
 module.exports = withPWA(nextConfig)

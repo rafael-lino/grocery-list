@@ -5,6 +5,11 @@ Format: `[YYYY-MM-DD] — Description`
 
 ---
 
+## [2026-08-03] — Upgrade react-markdown to v10 + remark-gfm to v4
+
+- Upgraded `react-markdown` from v8 → v10 and `remark-gfm` from v3 → v4
+- Added `transpilePackages: ['react-markdown', 'remark-gfm']` to `next.config.js` — required because v10/v4 are ESM-only and Next.js 14's Webpack treats node_modules as CJS by default, causing silent render failures without this flag
+
 ## [2026-08-03] — Markdown responses
 
 - Installed `react-markdown` and `remark-gfm`
