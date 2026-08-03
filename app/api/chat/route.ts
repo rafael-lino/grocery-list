@@ -27,19 +27,6 @@ You have access to tools to read and update a grocery database. When the user as
 - If an item is not found by name, list available items and ask for clarification
 - After a bulk update, confirm with a table showing the new quantities`
 
-const INTERNAL_FIELDS = new Set(['id', 'createdAt', 'updatedAt'])
-
-function sanitizeToolResult(result: unknown): unknown {
-  if (Array.isArray(result)) return result.map(sanitizeToolResult)
-  if (result !== null && typeof result === 'object') {
-    return Object.fromEntries(
-      Object.entries(result as Record<string, unknown>)
-        .filter(([k]) => !INTERNAL_FIELDS.has(k))
-        .map(([k, v]) => [k, sanitizeToolResult(v)])
-    )
-  }
-  return result
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -90,7 +77,7 @@ export async function POST(req: NextRequest) {
         allMessages.push({
           role: 'tool',
           tool_call_id: toolCall.id,
-          content: JSON.stringify(sanitizeToolResult(result)),
+          content: JSON.stringify(result),
         })
       }
 

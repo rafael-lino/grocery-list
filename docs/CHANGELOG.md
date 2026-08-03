@@ -5,6 +5,16 @@ Format: `[YYYY-MM-DD] — Description`
 
 ---
 
+## [2026-08-03] — Fix delete/update broken by sanitizeToolResult
+
+- Removed `sanitizeToolResult` from `app/api/chat/route.ts` — it was stripping `id` from tool results, preventing the LLM from passing IDs back as arguments to `delete_item`, `update_item`, and `bulk_update_quantities`
+- IDs are kept out of user-facing replies via the system prompt instruction alone, which is the correct boundary
+
+## [2026-08-03] — Fix markdown rendering on mobile
+
+- Replaced `transpilePackages` list (31 entries) with `experimental: { esmExternals: false }` in `next.config.js`
+- This tells Webpack to bundle all ESM packages automatically — no need to maintain a per-package list as dependencies update
+
 ## [2026-08-03] — Upgrade react-markdown to v10 + remark-gfm to v4
 
 - Upgraded `react-markdown` from v8 → v10 and `remark-gfm` from v3 → v4
