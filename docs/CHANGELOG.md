@@ -5,6 +5,25 @@ Format: `[YYYY-MM-DD] — Description`
 
 ---
 
+## [2026-08-04] — Fix streaming bugs (code review)
+
+- `route.ts`: removed `tool_choice: 'none'` from streaming call — invalid without `tools`, broke Gemini/Groq/OpenRouter with HTTP 400
+- `route.ts`: reuse existing final reply when the agentic loop already produced content, avoiding a redundant second LLM round-trip
+- `route.ts`: stream errors now call `controller.error(err)` instead of silently closing via `finally { controller.close() }`
+- `page.tsx`: `send()` guard now checks `streamingId !== null` in addition to `loading`, blocking Enter-key concurrent requests during streaming
+- `page.tsx`: stream read loop wrapped in its own `try/catch`; on failure the empty pre-allocated bubble is removed before the error message is appended
+- `page.tsx`: `TextDecoder` flushed after the read loop with `decoder.decode()` to emit any buffered trailing bytes from split multi-byte characters
+- `page.tsx`: table-wrap regex updated to `/<table(\s[^>]*)?>/gi` to match tables with attributes
+- Tests: added 3 new test cases covering concurrent send prevention, stream error recovery, and TextDecoder flush (9 total)
+
+## [2026-08-04] — Streaming responses
+
+- API route (`app/api/chat/route.ts`): agentic tool loop stays non-streaming; final reply switches to `stream: true` returning a `ReadableStream` with `text/plain` content type
+- Frontend (`app/page.tsx`): replaced `res.json()` with a `ReadableStream` reader that appends tokens into the assistant message as they arrive; typing indicator shows during tool resolution, text streams in immediately after
+- Markdown parsing deferred until streaming completes — raw text shown during stream to avoid broken mid-table HTML
+- Send button disabled while streaming to prevent concurrent requests
+- Tests updated: fetch mock now returns a `ReadableStream` body instead of JSON
+
 ## [2026-08-03] — Fix delete/update broken by sanitizeToolResult
 
 - Removed `sanitizeToolResult` from `app/api/chat/route.ts` — it was stripping `id` from tool results, preventing the LLM from passing IDs back as arguments to `delete_item`, `update_item`, and `bulk_update_quantities`

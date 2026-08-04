@@ -39,23 +39,28 @@ function TypingIndicator() {
 
 marked.setOptions({ gfm: true, breaks: true })
 
-function AssistantMarkdown({ content }: { content: string }) {
+function AssistantMarkdown({ content, streaming }: { content: string; streaming: boolean }) {
   const html = useMemo(() => {
+    if (streaming) return null
     const raw = (marked.parse(content) as string)
-      .replace(/<table>/g, '<div class="table-wrapper"><table>')
-      .replace(/<\/table>/g, '</table></div>')
+      .replace(/<table(\s[^>]*)?>/gi, '<div class="table-wrapper"><table$1>')
+      .replace(/<\/table>/gi, '</table></div>')
     return DOMPurify.sanitize(raw, { ADD_ATTR: ['class'] })
-  }, [content])
+  }, [content, streaming])
+
+  if (streaming) {
+    return <p className="text-sm leading-relaxed whitespace-pre-wrap">{content}</p>
+  }
 
   return (
     <div
       className="prose-assistant"
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: html! }}
     />
   )
 }
 
-function MessageBubble({ message }: { message: Message }) {
+function MessageBubble({ message, streaming }: { message: Message; streaming: boolean }) {
   const isUser = message.role === 'user'
   return (
     <div className={`flex items-end gap-2 mb-4 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
@@ -74,7 +79,7 @@ function MessageBubble({ message }: { message: Message }) {
         {isUser ? (
           message.content
         ) : (
-          <AssistantMarkdown content={message.content} />
+          <AssistantMarkdown content={message.content} streaming={streaming} />
         )}
       </div>
     </div>
@@ -85,6 +90,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [streamingId, setStreamingId] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -94,7 +100,7 @@ export default function ChatPage() {
 
   async function send(text: string) {
     const userMessage = text.trim()
-    if (!userMessage || loading) return
+    if (!userMessage || loading || streamingId !== null) return
 
     const newMessages: Message[] = [
       ...messages,
@@ -116,34 +122,61 @@ export default function ChatPage() {
           ...(settings.model && { 'x-model': settings.model }),
         },
         body: JSON.stringify({
-          messages: newMessages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
+          messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
         }),
       })
 
-      const data = await res.json()
+      if (!res.ok || !res.body) {
+        const data = await res.json()
+        setMessages((prev) => [
+          ...prev,
+          { id: crypto.randomUUID(), role: 'assistant', content: data.error || 'Something went wrong.' },
+        ])
+        return
+      }
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: 'assistant',
-          content: data.reply || data.error || 'Something went wrong.',
-        },
-      ])
+      // Add empty assistant message and start streaming into it
+      const assistantId = crypto.randomUUID()
+      setMessages((prev) => [...prev, { id: assistantId, role: 'assistant', content: '' }])
+      setStreamingId(assistantId)
+      setLoading(false)
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          const token = decoder.decode(value, { stream: true })
+          setMessages((prev) =>
+            prev.map((m) => m.id === assistantId ? { ...m, content: m.content + token } : m)
+          )
+        }
+        // Flush any remaining bytes from the decoder buffer
+        const tail = decoder.decode()
+        if (tail) {
+          setMessages((prev) =>
+            prev.map((m) => m.id === assistantId ? { ...m, content: m.content + tail } : m)
+          )
+        }
+        setStreamingId(null)
+      } catch {
+        // Remove the empty/partial bubble and show an error instead
+        setMessages((prev) => [
+          ...prev.filter((m) => m.id !== assistantId),
+          { id: crypto.randomUUID(), role: 'assistant', content: 'Connection error. Please check your settings.' },
+        ])
+        setStreamingId(null)
+      }
     } catch {
       setMessages((prev) => [
         ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: 'assistant',
-          content: 'Connection error. Please check your settings.',
-        },
+        { id: crypto.randomUUID(), role: 'assistant', content: 'Connection error. Please check your settings.' },
       ])
     } finally {
       setLoading(false)
+      setStreamingId(null)
     }
   }
 
@@ -207,7 +240,7 @@ export default function ChatPage() {
         )}
 
         {messages.map((m) => (
-          <MessageBubble key={m.id} message={m} />
+          <MessageBubble key={m.id} message={m} streaming={m.id === streamingId} />
         ))}
 
         {loading && <TypingIndicator />}
@@ -234,7 +267,7 @@ export default function ChatPage() {
           />
           <button
             onClick={() => send(input)}
-            disabled={!input.trim() || loading}
+            disabled={!input.trim() || loading || streamingId !== null}
             className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center flex-shrink-0 disabled:opacity-30 transition-opacity"
             aria-label="Send"
           >
