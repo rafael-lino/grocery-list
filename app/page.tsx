@@ -180,11 +180,8 @@ export default function ChatPage() {
     }
   }
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      send(input)
-    }
+  function handleKeyDown(_e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    // Enter always inserts a new line; send only via the button
   }
 
   const isEmpty = messages.length === 0
