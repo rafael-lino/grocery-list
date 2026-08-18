@@ -180,10 +180,6 @@ export default function ChatPage() {
     }
   }
 
-  function handleKeyDown(_e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    // Enter always inserts a new line; send only via the button
-  }
-
   const isEmpty = messages.length === 0
 
   return (
@@ -225,6 +221,7 @@ export default function ChatPage() {
             <div className="grid grid-cols-2 gap-2 w-full max-w-xs">
               {SUGGESTIONS.map((s) => (
                 <button
+                  type="button"
                   key={s}
                   onClick={() => send(s)}
                   className="bg-[#1a1a1a] border border-white/5 rounded-xl px-3 py-3 text-xs text-gray-300 hover:border-purple-500/40 hover:text-white transition-all text-left"
@@ -251,7 +248,7 @@ export default function ChatPage() {
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
+            enterKeyHint='enter'
             placeholder="Ask about your groceries…"
             rows={1}
             className="flex-1 bg-transparent text-sm text-white placeholder-gray-600 resize-none outline-none max-h-28 leading-relaxed"
@@ -263,6 +260,7 @@ export default function ChatPage() {
             }}
           />
           <button
+            type="button"
             onClick={() => send(input)}
             disabled={!input.trim() || loading || streamingId !== null}
             className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center flex-shrink-0 disabled:opacity-30 transition-opacity"
